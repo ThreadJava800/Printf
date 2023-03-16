@@ -10,7 +10,7 @@
 %endmacro
 
 section .data
-zerBuf:     times 16 db 0
+zerBuf:     times 64 db 0
 
 section .text
 
@@ -23,8 +23,8 @@ section .text
 ;-----------------------------------------------------------
 ToDec:
 	
-			mov rcx, 0x4		      ; amount of digits (16d)
-            mov rbx, zerBuf + 0x4     ; rbx = end of zerobuf
+			mov rcx, 0x12		      ; amount of digits (16d)
+            mov rbx, zerBuf + 0x12     ; rbx = end of zerobuf
 	
 .PrintSymb:
 			mov rdi, 0xA		; rcx = 10
@@ -43,7 +43,7 @@ ToDec:
 			loop .PrintSymb
 
 .Exit:		
-            mov rbx, 0x5
+            mov rbx, 0x13
             sub rbx, rcx        ; amount of values to print
 
             mov r10, zerBuf
@@ -64,8 +64,8 @@ section .text
 ; Destroys: 	RBX, RCX, RDX, RSI, RDI
 ;----------------------------------------------------------
 ToHex:
-            mov rcx, 0x08			    ; amount of numbers in hex val
-            mov rbx, zerBuf + 0x07      ; end of buffer
+            mov rcx, 0x10			    ; amount of numbers in hex val
+            mov rbx, zerBuf + 0x0F      ; end of buffer
 
 .Loop:			
             mov rdi, 0x0F 			    ; byte mask
@@ -83,7 +83,7 @@ ToHex:
             loop .Loop
 
 .Exit:
-            mov rbx, 0x08
+            mov rbx, 0x10
             sub rbx, rcx                ; amount of values to print
 
             mov r10, zerBuf
@@ -100,8 +100,8 @@ ToHex:
 ; Destroys: 	RAX, RBX, RCX, RDX
 ;-----------------------------------------------------------
 ToBin:
-            mov rcx, 0x10               ; counter = 15 (max 16 digits)
-            mov rbx, zerBuf + 0xF       ; setting rbx to end of buffer
+            mov rcx, 0x40                ; counter = 65 (max 64 digits)
+            mov rbx, zerBuf + 0x3F       ; setting rbx to end of buffer
 
 .Loop:      
             mov rdx, 0x01               ; flag to and with
@@ -119,10 +119,47 @@ ToBin:
             loop .Loop
 
 .Exit:      
-            mov rbx, 0x10
+            mov rbx, 0x40
             sub rbx, rcx                ; amount of values to print
 
             mov r10, zerBuf
             add r10, rcx                ; rax = pointer to beginning of decimal
             prStdout r10, rbx
             ret
+
+
+;-----------------------------------------------------------
+; Print binary of value
+;-----------------------------------------------------------
+; Entry: 		RAX = value to convert to
+; Exit:			None
+; Expects:  	None
+; Destroys: 	RAX, RBX, RCX, RDX
+;-----------------------------------------------------------
+ToOct:
+                mov rcx, 0x15           ; amount of digits (21)
+                mov rbx, zerBuf + 0x14  ; end of buf
+
+.Loop:
+                mov rdx, 0x07           ; bit mask (last 3 values)
+                and rdx, rax            ; rdx = 3 last values
+
+                add rdx, 0x30           ; convert to ascii
+                mov byte [rbx], dl      ; push to buffer
+
+                dec rbx                 ; rbx--
+
+                cmp rax, 0
+                je .Exit
+
+                shr rax, 0x03           ; rax >> 3
+                loop .Loop
+
+.Exit:          
+                mov rbx, 0x15
+                sub rbx, rcx                ; amount of values to print
+
+                mov r10, zerBuf
+                add r10, rcx                ; rax = pointer to beginning of decimal
+                prStdout r10, rbx
+                ret

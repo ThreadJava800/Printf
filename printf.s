@@ -47,7 +47,7 @@ main:
         ; call printf
 
         mov rax, 13
-        call ToBin
+        call ToOct
 
         mov rax, 0x3C
         syscall                 ; exit()
