@@ -19,7 +19,7 @@ section .text
 ;-----------------------------------------------------------
 ; Entry: 	    RAX = value to convert to
 ; Exit:		    None
-; Destroys: 	RAX, RBX, RCX, RDX
+; Destroys: 	RAX, RBX, RCX, RDX, RDI
 ;-----------------------------------------------------------
 ToDec:
 	
@@ -48,5 +48,46 @@ ToDec:
 
             mov r10, zerBuf
             add r10, rcx        ; rax = pointer to beginning of decimal
+            prStdout r10, rbx
+            ret
+
+section .data
+symbArr:   db "0123456789ABCDEF"
+
+section .text
+;-----------------------------------------------------------
+; Print hex of value
+;-----------------------------------------------------------
+; Entry: 		SI = value to convert to
+; Exit:			None
+; Expects:  	None
+; Destroys: 	RBX, RCX, RDX, RSI, RDI
+;----------------------------------------------------------
+ToHex:
+            mov rcx, 0x08			    ; amount of numbers in hex val
+            mov rbx, zerBuf + 0x07      ; end of buffer
+
+
+.Loop:			
+            mov rdi, 0x0F 			    ; byte mask
+            and rdi, rsi 				; first num
+
+            mov dl, [symbArr + rdi]     ; getting symbol
+            mov byte [rbx], dl          ; writing symbol to buf
+
+            dec rbx                     ; rbx--
+
+            cmp rsi, 0
+            je .Exit                    ; exit if numbers ended
+
+            shr rsi, 4                  ; rsi //= 16
+            loop .Loop
+
+.Exit:
+            mov rbx, 0x08
+            sub rbx, rcx                ; amount of values to print
+
+            mov r10, zerBuf
+            add r10, rcx                ; rax = pointer to beginning of decimal
             prStdout r10, rbx
             ret
