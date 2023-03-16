@@ -46,8 +46,8 @@ main:
         ; mov rcx, 0x62
         ; call printf
 
-        mov rsi, 0x0AF
-        call ToHex
+        mov rax, 13
+        call ToBin
 
         mov rax, 0x3C
         syscall                 ; exit()
