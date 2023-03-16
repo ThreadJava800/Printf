@@ -4,16 +4,7 @@ global _start
 
 _start: jmp main
 
-;-----------------------------------------------------------------------------
-; Prints string to stdout
-;-----------------------------------------------------------------------------
-%macro  prStdout 2
-        mov rax, 0x01   ; stdout
-        mov rdi, 1      ; func id
-        mov rsi, %1     ; rsi (pointer to str)
-        mov rdx, %2     ; rdx (msgLen)
-        syscall
-%endmacro
+%include "nlib.s"
 
 ;-----------------------------------------------------------------------------
            ; a      b      c      d    e
@@ -52,8 +43,11 @@ printf:
 
 
 main: 
-        mov rcx, 0x62
-        call printf
+        ; mov rcx, 0x62
+        ; call printf
+
+        mov rax, 0x100
+        call ToDec
 
         mov rax, 0x3C
         syscall                 ; exit()
@@ -64,8 +58,10 @@ section .data
 DefMsg:   db  "Looser", 0x0A
 DefMsgLen equ $ - DefMsg
 
-BMsg:     db  "B", 0x0A
+BMsg:     db  "Hello B", 0x0A
 BMsgLen   equ $ - BMsg
 
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
+
+format:   db "Hello, %d"
