@@ -2,11 +2,14 @@
 ; Prints string to stdout
 ;-----------------------------------------------------------------------------
 %macro  prStdout 2
+
         mov rax, 0x01   ; stdout
         mov rdi, 1      ; func id
         mov rsi, %1     ; rsi (pointer to str)
         mov rdx, %2     ; rdx (msgLen)
+
         syscall
+        
 %endmacro
 
 section .data
@@ -25,6 +28,8 @@ ToDec:
 	
 			mov rcx, 0x12		      ; amount of digits (16d)
             mov rbx, zerBuf + 0x12     ; rbx = end of zerobuf
+
+            xor rdx, rdx
 	
 .PrintSymb:
 			mov rdi, 0xA		; rcx = 10
@@ -129,7 +134,7 @@ ToBin:
 
 
 ;-----------------------------------------------------------
-; Print binary of value
+; Print oct of value
 ;-----------------------------------------------------------
 ; Entry: 		RAX = value to convert to
 ; Exit:			None
@@ -163,3 +168,21 @@ ToOct:
                 add r10, rcx                ; rax = pointer to beginning of decimal
                 prStdout r10, rbx
                 ret
+
+;-----------------------------------------------------------------------------
+; Entry:    RBX - pointer to string
+; Exit:     None
+; Expects:  None
+; Destroys: RAX, RBX
+PrintString:
+.PrSymb:    
+            mov byte al, [rbx]
+            cmp al, "$"
+            je .Exit                ; if \0 met return
+
+            prStdout rbx, 1         ; print 1 symbol
+            inc rbx
+
+            jmp .PrSymb
+
+.Exit:      ret
