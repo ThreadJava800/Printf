@@ -12,6 +12,34 @@
         
 %endmacro
 
+;-----------------------------------------------------------------------------
+; Pushes some of 64 bit registers
+;-----------------------------------------------------------------------------
+%macro  pushar 0
+
+        push rax
+        push rbx
+        push rcx
+        push rdx
+        push rsi
+        push rdi
+        
+%endmacro
+
+;-----------------------------------------------------------------------------
+; Pops some of 64 bit registers
+;-----------------------------------------------------------------------------
+%macro  popar 0
+
+        pop rdi
+        pop rsi
+        pop rdx
+        pop rcx
+        pop rbx
+        pop rax
+        
+%endmacro
+
 section .data
 zerBuf:     times 64 db 0
 
@@ -63,7 +91,7 @@ section .text
 ;-----------------------------------------------------------
 ; Print hex of value
 ;-----------------------------------------------------------
-; Entry: 		SI = value to convert to
+; Entry: 		RSI = value to convert to
 ; Exit:			None
 ; Expects:  	None
 ; Destroys: 	RBX, RCX, RDX, RSI, RDI

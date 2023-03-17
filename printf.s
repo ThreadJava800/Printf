@@ -61,18 +61,41 @@ def:
 ;               [temp] rcx - value to print   
 ;----------------------------------------------------------------------------  
 printf:
-        sub rcx, 0x61
-        shl rcx, 0x3
-        mov rdx, cases[rcx]
-        jmp rdx
-        ret
+.stLoop:
+        mov al, byte [rdi]      ; al = symbol from rdi
+        inc rdi                 ; rdi++
+
+        cmp al, "%"             ; if al == '%': jmp
+        je  .mkJmp
+
+        jmp .stLoop             ; else: repeat
+
+.mkJmp:
+        mov al, byte [rdi]      ; al = symbol to jump
+        sub rax, 0x61           ;      [ascii to ind]     
+        shl rax, 0x03           ; al = (al - 61) * 8 (indexing jmp arr)
+        mov rdx, cases[rax]
+
+        pushar                  ; push rax, rbx, rcx, rdx, rsi, rdi
+        call rdx                ; calling needed
+        popar                   ; pop some of (:79) 64-bit regs
+
+        xor rax, rax            ; rax = 0
+        inc rdi                 ; rdi++
+
+        mov al, byte [rdi]      ; al - next symbol
+        cmp rax, 0x24           ; if al ==  return
+        je  .Exit
+
+        jmp .stLoop             ; else continue
+
+.Exit:  ret
 
 
 main: 
-        mov rcx, 's'
-        mov rax, 31
+        mov rdi, format
         mov rsi, 31
-        mov rbx, BMsg
+        mov rbx, "r"
         call printf
 
         mov rax, 0x3C
@@ -90,6 +113,8 @@ BMsgLen   equ $ - BMsg
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "Hello, %d"
+format:   db "Hello, %x %c$"
+formatLen equ $ - format
+
 
 oneChar:  db 0
