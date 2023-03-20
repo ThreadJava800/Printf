@@ -25,33 +25,33 @@ cases:  dq def, procB, procC, procD
 
 procB:
         call ToBin
-        ret
+        jmp RtnCase
 
 procC:
         mov rbx, [rbp]
         mov [oneChar], rbx
         prStdout oneChar, 1
-        ret
+        jmp RtnCase
 
 procD:
         call ToDec
-        ret
+        jmp RtnCase
 
 procO:
         call ToOct
-        ret
+        jmp RtnCase
 
 procS:
         call PrintString
-        ret
+        jmp RtnCase
 
 procX:
         call ToHex
-        ret
+        jmp RtnCase
 
 def:
         prStdout DefMsg, DefMsgLen
-        ret
+        jmp RtnCase
 ;----------------------------------------------------------------------------
 
 ;----------------------------------------------------------------------------
@@ -60,9 +60,18 @@ def:
 ; Entry:        rax - symbol to print
 ; Expects:      None
 ; Exit:         None
-; Destroys:     rdx
+; Destroys:     rdx, rbp
 ;----------------------------------------------------------------------------
 Swtch:
+        mov rdx, cases[rax]     ; rdx = place where to jump
+
+        pushar                  ; push rax, rbx, rcx, rdx, rsi, rdi
+        jmp rdx                 ; jmping on case
+
+RtnCase:        
+        popar                   ; pop some of (:68) 64-bit regs
+        add rbp, 8              ; moving bp forward to next argument
+
         ret
 
 ;----------------------------------------------------------------------------
@@ -74,8 +83,8 @@ Swtch:
 ;----------------------------------------------------------------------------  
 printf:
         push rbp                 ; saving all bp
-        mov rbp, rsp             ; sp -> bp
-        add bp, 8 * 2            ; bp -= 2 registers -> first argument
+        mov  rbp, rsp            ; sp -> bp
+        add  rbp, 8 * 2          ; bp -= 2 registers -> first argument
 
 .stLoop:
         mov al, byte [rdi]      ; al = symbol from rdi
@@ -90,12 +99,8 @@ printf:
         mov al, byte [rdi]      ; al = symbol to jump
         sub rax, 0x61           ;      [ascii to ind]     
         shl rax, 0x03           ; al = (al - 61) * 8 (indexing jmp arr)
-        mov rdx, cases[rax]
-
-        pushar                  ; push rax, rbx, rcx, rdx, rsi, rdi
-        call rdx                ; calling needed
-        popar                   ; pop some of (:79) 64-bit regs
-        add bp, 8               ; moving bp backwards
+        
+        call Swtch               ; parse %
 
         xor rax, rax            ; rax = 0
         inc rdi                 ; rdi++
