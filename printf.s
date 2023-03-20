@@ -28,6 +28,7 @@ procB:
         ret
 
 procC:
+        mov rbx, [rbp]
         mov [oneChar], rbx
         prStdout oneChar, 1
         ret
@@ -41,7 +42,7 @@ procO:
         ret
 
 procS:
-        call PrintString                ; rbx
+        call PrintString
         ret
 
 procX:
@@ -54,6 +55,17 @@ def:
 ;----------------------------------------------------------------------------
 
 ;----------------------------------------------------------------------------
+; Switch-case handler. Takes symbol and parses it.
+;----------------------------------------------------------------------------
+; Entry:        rax - symbol to print
+; Expects:      None
+; Exit:         None
+; Destroys:     rdx
+;----------------------------------------------------------------------------
+Swtch:
+        ret
+
+;----------------------------------------------------------------------------
 ; Takes string format and any amount of arguments to print
 ;---------------------------------------------------------------------------- 
 ; Entry:        rax - amount of arguments
@@ -61,6 +73,10 @@ def:
 ;               [temp] rcx - value to print   
 ;----------------------------------------------------------------------------  
 printf:
+        push rbp                 ; saving all bp
+        mov rbp, rsp             ; sp -> bp
+        add bp, 8 * 2            ; bp -= 2 registers -> first argument
+
 .stLoop:
         mov al, byte [rdi]      ; al = symbol from rdi
         inc rdi                 ; rdi++
@@ -79,6 +95,7 @@ printf:
         pushar                  ; push rax, rbx, rcx, rdx, rsi, rdi
         call rdx                ; calling needed
         popar                   ; pop some of (:79) 64-bit regs
+        add bp, 8               ; moving bp backwards
 
         xor rax, rax            ; rax = 0
         inc rdi                 ; rdi++
@@ -89,13 +106,20 @@ printf:
 
         jmp .stLoop             ; else continue
 
-.Exit:  ret
+.Exit:  
+        pop rbp
+        ret
 
 
+;--------------------------------------------------------------
+; Just main function
+; Calls printf function to parse fmt
+;--------------------------------------------------------------
 main: 
         mov rdi, format
-        mov rsi, 31
-        mov rbx, "r"
+        push '2'
+        push 123
+        push BMsg
         call printf
 
         mov rax, 0x3C
@@ -113,7 +137,7 @@ BMsgLen   equ $ - BMsg
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "Hello, %x %c$"
+format:   db "Hello, %s %x %c$"
 formatLen equ $ - format
 
 

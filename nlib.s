@@ -48,41 +48,41 @@ section .text
 ;-----------------------------------------------------------
 ; Print dec of value
 ;-----------------------------------------------------------
-; Entry: 	    RAX = value to convert to
+; Entry: 	    [RBP] = value to convert to
 ; Exit:		    None
-; Destroys: 	RAX, RBX, RCX, RDX, RDI
+; Destroys: 	    RAX, RBX, RCX, RDX, RDI
 ;-----------------------------------------------------------
 ToDec:
-	
-			mov rcx, 0x12		      ; amount of digits (16d)
-            mov rbx, zerBuf + 0x12     ; rbx = end of zerobuf
+                mov rax, [rbp]                ; moving from [rbp] to rax
+                mov rcx, 0x12		      ; amount of digits (16d)
+                mov rbx, zerBuf + 0x12        ; rbx = end of zerobuf
 
-            xor rdx, rdx
+                xor rdx, rdx                  ; rdx = 0
 	
 .PrintSymb:
-			mov rdi, 0xA		; rcx = 10
-			div rdi				; rax = rax / 10, rdx = rax % 10
-				
-			add rdx, 0x30		; edx += 30 (symb ascii)
+                mov rdi, 0xA		; rcx = 10
+                div rdi				; rax = rax / 10, rdx = rax % 10
+                                        
+                add rdx, 0x30		; edx += 30 (symb ascii)
 
-			mov byte [rbx], dl      ; add to buffer
-            dec rbx			    ; bx --
+                mov byte [rbx], dl      ; add to buffer
+                dec rbx			; bx --
 
-			xor rdx, rdx        ; rdx = 0
+                xor rdx, rdx            ; rdx = 0
 
-            cmp rax, 0
-            je .Exit            ; exit if no more digits in number
+                cmp rax, 0
+                je .Exit                ; exit if no more digits in number
 
-			loop .PrintSymb
+                loop .PrintSymb
 
 .Exit:		
-            mov rbx, 0x13
-            sub rbx, rcx        ; amount of values to print
+                mov rbx, 0x13
+                sub rbx, rcx        ; amount of values to print
 
-            mov r10, zerBuf
-            add r10, rcx        ; rax = pointer to beginning of decimal
-            prStdout r10, rbx
-            ret
+                mov r10, zerBuf
+                add r10, rcx        ; rax = pointer to beginning of decimal
+                prStdout r10, rbx
+                ret
 
 section .data
 symbArr:   db "0123456789ABCDEF"
@@ -91,12 +91,13 @@ section .text
 ;-----------------------------------------------------------
 ; Print hex of value
 ;-----------------------------------------------------------
-; Entry: 		RSI = value to convert to
-; Exit:			None
+; Entry:        [RBP] = value to convert to
+; Exit:		None
 ; Expects:  	None
 ; Destroys: 	RBX, RCX, RDX, RSI, RDI
 ;----------------------------------------------------------
 ToHex:
+            mov rsi, [rbp]
             mov rcx, 0x10			    ; amount of numbers in hex val
             mov rbx, zerBuf + 0x0F      ; end of buffer
 
@@ -127,12 +128,13 @@ ToHex:
 ;-----------------------------------------------------------
 ; Print binary of value
 ;-----------------------------------------------------------
-; Entry: 		RAX = value to convert to
-; Exit:			None
+; Entry:        RAX = value to convert to
+; Exit:		None
 ; Expects:  	None
 ; Destroys: 	RAX, RBX, RCX, RDX
 ;-----------------------------------------------------------
 ToBin:
+            mov rax, [rbp]               ; [rbp] -> rax
             mov rcx, 0x40                ; counter = 65 (max 64 digits)
             mov rbx, zerBuf + 0x3F       ; setting rbx to end of buffer
 
@@ -164,12 +166,13 @@ ToBin:
 ;-----------------------------------------------------------
 ; Print oct of value
 ;-----------------------------------------------------------
-; Entry: 		RAX = value to convert to
-; Exit:			None
+; Entry: 	[RBP] = value to convert to
+; Exit:		None
 ; Expects:  	None
 ; Destroys: 	RAX, RBX, RCX, RDX
 ;-----------------------------------------------------------
 ToOct:
+                mov rax, [rbp]
                 mov rcx, 0x15           ; amount of digits (21)
                 mov rbx, zerBuf + 0x14  ; end of buf
 
@@ -202,13 +205,17 @@ ToOct:
 ; Exit:     None
 ; Expects:  None
 ; Destroys: RAX, RBX
+;-----------------------------------------------------------------------------
 PrintString:
+            mov rbx, [rbp]            ; rbx addr = pointer to str
+
 .PrSymb:    
             mov byte al, [rbx]
-            cmp al, "$"
-            je .Exit                ; if \0 met return
 
-            prStdout rbx, 1         ; print 1 symbol
+            cmp al, "$"
+            je .Exit                  ; if \0 met return
+
+            prStdout rbx, 1           ; print 1 symbol
             inc rbx
 
             jmp .PrSymb
