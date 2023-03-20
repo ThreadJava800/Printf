@@ -152,10 +152,10 @@ printf:
 ;--------------------------------------------------------------
 main: 
         mov rdi, format
-        push 123
-        push BMsg
-        push 123
-        push '2'
+        push -4
+        ; push BMsg
+        ; push 123
+        ; push '2'
 
         call printf
 
@@ -174,7 +174,7 @@ BMsgLen   equ $ - BMsg
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "Format, %c %x %s %dtest%%$"       ; TODO: crash on something before $
+format:   db "%dtest%%$"       ; TODO: crash on something before $
 formatLen equ $ - format
 
 
