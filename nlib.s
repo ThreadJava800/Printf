@@ -23,6 +23,7 @@
         push rdx
         push rsi
         push rdi
+        push r10
         
 %endmacro
 
@@ -31,6 +32,7 @@
 ;-----------------------------------------------------------------------------
 %macro  popar 0
 
+        pop r10
         pop rdi
         pop rsi
         pop rdx

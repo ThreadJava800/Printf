@@ -49,6 +49,15 @@ procX:
         call ToHex
         jmp RtnCase
 
+procPcnt:
+        mov qword [oneChar], "%"
+
+        pushar
+        prStdout oneChar, 1
+        popar
+
+        ret                ; return from switch function!
+
 def:
         prStdout DefMsg, DefMsgLen
         jmp RtnCase
@@ -63,6 +72,13 @@ def:
 ; Destroys:     rdx, rbp
 ;----------------------------------------------------------------------------
 Swtch:
+        mov al, byte [rdi]      ; al = symbol to jump
+
+        cmp rax, "%"            ; if one more % met: print %
+        je procPcnt
+
+        sub rax, 0x61           ;      [ascii to ind]     
+        shl rax, 0x03           ; al = (al - 61) * 8 (indexing jmp arr)
         mov rdx, cases[rax]     ; rdx = place where to jump
 
         pushar                  ; push rax, rbx, rcx, rdx, rsi, rdi
@@ -86,6 +102,8 @@ printf:
         mov  rbp, rsp            ; sp -> bp
         add  rbp, 8 * 2          ; bp -= 2 registers -> first argument
 
+        mov  r10, rdi            ; r10 = start of string to print except of %
+
 .stLoop:
         mov al, byte [rdi]      ; al = symbol from rdi
         inc rdi                 ; rdi++
@@ -93,25 +111,37 @@ printf:
         cmp al, "%"             ; if al == '%': jmp
         je  .mkJmp
 
+        cmp rax, 0x24           ; if al == $ return
+        je  .Exit
+
         jmp .stLoop             ; else: repeat
 
 .mkJmp:
-        mov al, byte [rdi]      ; al = symbol to jump
-        sub rax, 0x61           ;      [ascii to ind]     
-        shl rax, 0x03           ; al = (al - 61) * 8 (indexing jmp arr)
-        
-        call Swtch               ; parse %
+        pushar
+
+        mov rcx, rdi
+        sub rcx, r10            ; rcx = rdi - r10 (length of str)
+        dec rcx
+
+        prStdout r10, rcx       ; print string before %
+        popar
+        mov r10, rdi
+        inc r10
+
+        call Swtch              ; parse %
 
         xor rax, rax            ; rax = 0
         inc rdi                 ; rdi++
 
-        mov al, byte [rdi]      ; al - next symbol
-        cmp rax, 0x24           ; if al ==  return
-        je  .Exit
-
         jmp .stLoop             ; else continue
 
 .Exit:  
+        mov rcx, rdi
+        sub rcx, r10            ; rcx = rdi - r10 (length of str)
+        dec rcx
+
+        prStdout r10, rcx       ; print string before %
+
         pop rbp
         ret
 
@@ -122,9 +152,11 @@ printf:
 ;--------------------------------------------------------------
 main: 
         mov rdi, format
-        push '2'
         push 123
         push BMsg
+        push 123
+        push '2'
+
         call printf
 
         mov rax, 0x3C
@@ -136,13 +168,13 @@ section .data
 DefMsg:   db  "Looser", 0x0A
 DefMsgLen equ $ - DefMsg
 
-BMsg:     db  "Hello B", 0x0A, "$"
+BMsg:     db  "Hello B$"
 BMsgLen   equ $ - BMsg
 
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "Hello, %s %x %c$"
+format:   db "Format, %c %x %s %dtest%%$"       ; TODO: crash on something before $
 formatLen equ $ - format
 
 
