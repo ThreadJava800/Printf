@@ -1,9 +1,10 @@
+; USE FOR CALL FROM CPP
 global adapterToC
 
 section .text
 
+; USE FOR CALL FROM ASSEMBLY
 ; global _start
-
 ; _start: jmp main
 
 %include "nlib.s"
@@ -191,21 +192,20 @@ main:
         exit
 
 adapterToC:
-        pop r10
+        pop r10         ; return addr from c func
 
-        push r9
-        push r8
-        push rcx
-        push rdx
-        push rsi
-        push rdi
+        push r9         ; arg 6
+        push r8         ; arg 5
+        push rcx        ; arg 4
+        push rdx        ; arg 3
+        push rsi        ; arg 2
+        push rdi        ; arg1
 
         call asmPrintf
 
-        push r10
+        push r10        ; pushing return back
 
-        exit
-
+        ret
 
 
 section .data
