@@ -6,7 +6,7 @@ _start: jmp main
 
 %include "nlib.s"
 
-
+section .rodata
 ;-----------------------------------------------------------------------------
         ;    a      b      c      d
 cases:  dq def, procB, procC, procD
@@ -22,8 +22,9 @@ cases:  dq def, procB, procC, procD
         times 4 dq def 
         ;      x
         dq procX
-           
+;------------------------------------------------------------------------------
 
+section .text
 procB:
         mov cl, 0x01
         call ToBinDeg
@@ -60,7 +61,7 @@ procPcnt:
         prStdout oneChar, 1
         popar
 
-        ret                ; return from switch function!
+        ret                                     ; return from switch function!
 
 def:
         shr rax, 0x03
@@ -110,16 +111,22 @@ RtnCase:
 ;----------------------------------------------------------------------------
 ; Takes string format and any amount of arguments to print
 ;---------------------------------------------------------------------------- 
-; Entry:        rax - amount of arguments
-;               rbx - pointer to string with symbols
-;               [temp] rcx - value to print   
+; Entry:        [CDECL] - last in stack fmt, then arguments in correct order
+; Expects:      None
+; Exit:         None
+; Destroys:     None
 ;----------------------------------------------------------------------------  
 printf:
         push rbp                 ; saving all bp
-        mov  rbp, rsp            ; sp -> bp
-        add  rbp, 8 * 2          ; bp -= 2 registers -> first argument
+        pushar                   ; save all
 
+        mov  rbp, rsp            ; rsp -> rbp
+        add  rbp, 8 * 9          ; rbp -= 9 registers -> fmt
+
+        mov  rdi, [rbp]          ; setting rdi = address of fmt str
         mov  r10, rdi            ; r10 = start of string to print except of %
+
+        add rbp, 8               ; moving rbp -> first argument
 
 .stLoop:
         mov al, byte [rdi]      ; al = symbol from rdi
@@ -159,7 +166,8 @@ printf:
 
         prStdout r10, rcx       ; print string before %
 
-        pop rbp
+        popar
+        pop rbp                 ; getting al back
         ret
 
 
@@ -168,13 +176,13 @@ printf:
 ; Calls printf function to parse fmt
 ;--------------------------------------------------------------
 main: 
-        mov rdi, format
         push '1'
         push 16
         push 16
         push 16
         push BMsg
         push 123
+        push format
 
         call printf
 
@@ -192,8 +200,6 @@ BMsgLen   equ $ - BMsg
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "FMT STR: %d %s %x %o test %d %1 %c", 0x0A, '$'
-formatLen equ $ - format
-
+format:   db "FMT STR: %d %s %x %o test %d %c", 0x0A, '$'
 
 oneChar:  db 0
