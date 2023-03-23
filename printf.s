@@ -1,8 +1,10 @@
+global adapterToC
+
 section .text
 
-global _start
+; global _start
 
-_start: jmp main
+; _start: jmp main
 
 %include "nlib.s"
 
@@ -116,7 +118,7 @@ RtnCase:
 ; Exit:         None
 ; Destroys:     None
 ;----------------------------------------------------------------------------  
-printf:
+asmPrintf:
         push rbp                 ; saving all bp
         pushar                   ; save all
 
@@ -184,9 +186,26 @@ main:
         push 123
         push format
 
-        call printf
+        call asmPrintf
 
         exit
+
+adapterToC:
+        pop r10
+
+        push r9
+        push r8
+        push rcx
+        push rdx
+        push rsi
+        push rdi
+
+        call asmPrintf
+
+        push r10
+
+        exit
+
 
 
 section .data
