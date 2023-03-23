@@ -179,17 +179,18 @@ asmPrintf:
 ; Calls printf function to parse fmt
 ;--------------------------------------------------------------
 main: 
-        push '1'
-        push 16
-        push 16
-        push 16
-        push BMsg
-        push 123
+        push 127d
+        push 33d
+        push 100d
+        push 3802d
+        push love_str
+        push -1
         push format
 
         call asmPrintf
 
         exit
+
 
 adapterToC:
         pop r10         ; return addr from c func
@@ -213,12 +214,12 @@ section .data
 DefMsg:   db  "Unknown flag: ", 0, 0, 0x0A
 DefMsgLen equ $ - DefMsg
 
-BMsg:     db  "Hello B$"
-BMsgLen   equ $ - BMsg
+love_str: db "love$"
 
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "FMT STR: %d %s %x %o test %d %c", 0x0A, '$'
+format:   db "-What should you love?", 0Ah, \
+                 "%d %s %x %d%%%c%b", 0Ah, '$'
 
 oneChar:  db 0

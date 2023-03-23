@@ -4,8 +4,7 @@ extern "C" void adapterToC(const char* fmt, ...);
  gcc -no-pie printf.o ccall.cpp
 */
 int main() {
-    char* text = "FUCK$";
-    adapterToC("Hello, %d %d Moscow %s %d %x %s %c %s\n", -1ll, 160, "Test$", 160, 100, "Me$", 0x32, text);
+    adapterToC("-What should you love?\n%d %s %x %d%%%c%b\n$", -1ll, "love$", 3802, 100, 33, 127);
 
     return 0;
 }
