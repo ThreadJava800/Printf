@@ -6,6 +6,7 @@ _start: jmp main
 
 %include "nlib.s"
 
+
 ;-----------------------------------------------------------------------------
         ;    a      b      c      d
 cases:  dq def, procB, procC, procD
@@ -62,8 +63,15 @@ procPcnt:
         ret                ; return from switch function!
 
 def:
+        shr rax, 0x03
+        add rax, 0x61                           ; getting value from address -> al
+
+printErr:
+        mov byte [DefMsg + DefMsgLen - 3], '%'
+        mov byte [DefMsg + DefMsgLen - 2], al
+
         prStdout DefMsg, DefMsgLen
-        jmp RtnCase
+        exit
 ;----------------------------------------------------------------------------
 
 ;----------------------------------------------------------------------------
@@ -79,6 +87,12 @@ Swtch:
 
         cmp rax, "%"            ; if one more % met: print %
         je procPcnt
+
+        cmp al, 0x61
+        jb printErr
+
+        cmp al, 0x78
+        ja printErr             ; if al < 'a' || al > 'x' drop err
 
         sub rax, 0x61           ;      [ascii to ind]     
         shl rax, 0x03           ; al = (al - 61) * 8 (indexing jmp arr)
@@ -155,20 +169,21 @@ printf:
 ;--------------------------------------------------------------
 main: 
         mov rdi, format
+        push '1'
         push 16
-        ; push BMsg
-        ; push 123
-        ; push '2'
+        push 16
+        push 16
+        push BMsg
+        push 123
 
         call printf
 
-        mov rax, 0x3C
-        syscall                 ; exit()
+        exit
 
 
 section .data
 
-DefMsg:   db  "Looser", 0x0A
+DefMsg:   db  "Unknown flag: ", 0, 0, 0x0A
 DefMsgLen equ $ - DefMsg
 
 BMsg:     db  "Hello B$"
@@ -177,7 +192,7 @@ BMsgLen   equ $ - BMsg
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "%d$"
+format:   db "FMT STR: %d %s %x %o test %d %1 %c", 0x0A, '$'
 formatLen equ $ - format
 
 

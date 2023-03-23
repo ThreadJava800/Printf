@@ -42,6 +42,13 @@
         
 %endmacro
 
+;-------------------------------------------------------------------------------
+%macro exit 0
+        mov rax, 0x3C
+        syscall                 ; exit()
+%endmacro
+;-------------------------------------------------------------------------------
+
 section .data
 zerBuf:     times 64 db 0
 
@@ -112,13 +119,13 @@ symbArr:   db "0123456789ABCDEF"
 
 section .text
 ;-----------------------------------------------------------
-; Print hex of value
+; Prints any binary degree of value to screen
 ;-----------------------------------------------------------
 ; Entry:        [RBP] = value to convert to
-;               CL    = degree of scale
+;               CL    = degree of scale (1 - bin, 3 - oct, 4 - hex etc.)
 ; Exit:		None
 ; Expects:  	None
-; Destroys: 	RAX, RBX, RCX, RDX, RSI, RDI, R10
+; Destroys: 	RBX, DL, RSI, RDI, R10
 ;----------------------------------------------------------
 ToBinDeg:
         mov rsi, [rbp]                  ; copy value to rsi from memory
