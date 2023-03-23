@@ -24,7 +24,8 @@ cases:  dq def, procB, procC, procD
            
 
 procB:
-        call ToBin
+        mov cl, 0x01
+        call ToBinDeg
         jmp RtnCase
 
 procC:
@@ -38,7 +39,8 @@ procD:
         jmp RtnCase
 
 procO:
-        call ToOct
+        mov cl, 0x03
+        call ToBinDeg
         jmp RtnCase
 
 procS:
@@ -46,7 +48,8 @@ procS:
         jmp RtnCase
 
 procX:
-        call ToHex
+        mov cl, 0x04
+        call ToBinDeg
         jmp RtnCase
 
 procPcnt:
@@ -152,7 +155,7 @@ printf:
 ;--------------------------------------------------------------
 main: 
         mov rdi, format
-        push -4
+        push 16
         ; push BMsg
         ; push 123
         ; push '2'
@@ -174,7 +177,7 @@ BMsgLen   equ $ - BMsg
 CMsg:     db  "C", 0x0A
 CMsgLen   equ $ - CMsg
 
-format:   db "%dtest%%$"       ; TODO: crash on something before $
+format:   db "%d$"
 formatLen equ $ - format
 
 
