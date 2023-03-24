@@ -5,10 +5,12 @@
 extern "C" void kernel32connect(const char* fmt, ...);
 
 extern "C" void kernel32connect(const char* fmt, ...) {
-    va_list argptr = {};
-    va_start(argptr, fmt);
-    vfprintf(stderr, fmt, argptr);
-    va_end(argptr);
+    va_list args = {};
+    va_start(args, fmt);
+
+    vfprintf(stderr, fmt, args);
+    
+    va_end(args);
 }
 
 /*

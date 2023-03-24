@@ -58,7 +58,7 @@ procX:
         jmp RtnCase
 
 procPcnt:
-        mov qword [oneChar], "%"
+        mov byte [oneChar], "%"
 
         pushar
         prStdout oneChar, 1
@@ -203,6 +203,13 @@ adapterToC:
         push rdi        ; arg1
 
         call asmPrintf
+
+        pop rdi
+        pop rsi
+        pop rdx
+        pop rcx
+        pop r8
+        pop r9
 
         push r10        ; pushing return back
 
